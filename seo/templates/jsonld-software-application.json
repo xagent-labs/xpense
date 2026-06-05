@@ -1,0 +1,26 @@
+{
+  "_comment": "JSON-LD for the Xpense LANDING page. Inject inside <script type=\"application/ld+json\"> in <head>. Swap host/repo URLs for real values.",
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Xpense",
+  "alternateName": "@xagent/xpense",
+  "applicationCategory": "DeveloperApplication",
+  "applicationSubCategory": "Agentic Payments SDK",
+  "operatingSystem": "Node.js >= 18.17, cross-platform",
+  "description": "TypeScript SDK for agentic payments. Give AI agents spending limits, budgets and approval, emit audited Payment Intents, and settle via x402 / machine payments. Protocol-agnostic governance and intent layer.",
+  "url": "https://xpense.xagent.dev",
+  "downloadUrl": "https://www.npmjs.com/package/@xagent/xpense",
+  "softwareVersion": "0.1.0",
+  "programmingLanguage": "TypeScript",
+  "keywords": "agentic payments, AI agent payments, payment intent, x402, spending limits, agent governance, machine payments, autonomous agents, TypeScript SDK",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "XAgent",
+    "url": "https://github.com/xagent-labs"
+  }
+}

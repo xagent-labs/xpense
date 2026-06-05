@@ -1,0 +1,20 @@
+{
+  "_comment": "JSON-LD SoftwareSourceCode — ties docs to the GitHub repo. Inject on landing + repo-linked pages. Swap repo URL for real value.",
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "@xagent/xpense",
+  "description": "Agentic Payments SDK for TypeScript — spending limits, budgets, approval gates and audited Payment Intents for AI agents.",
+  "codeRepository": "https://github.com/xagent-labs/xpense",
+  "programmingLanguage": {
+    "@type": "ComputerLanguage",
+    "name": "TypeScript"
+  },
+  "runtimePlatform": "Node.js",
+  "url": "https://xpense.xagent.dev",
+  "author": {
+    "@type": "Organization",
+    "name": "XAgent",
+    "url": "https://github.com/xagent-labs"
+  },
+  "license": "https://github.com/xagent-labs/xpense/blob/main/LICENSE"
+}

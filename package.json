@@ -1,0 +1,84 @@
+{
+  "name": "@xagent/xpense",
+  "version": "0.1.0",
+  "description": "Xpense — Agentic Payment Stack. Inject payment capabilities into agents; emit structured Payment Intents.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "xpense": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "example:agent": "npm run build && node dist/examples/agent-injection.js",
+    "example:governance": "npm run build && node dist/examples/governance-limits.js",
+    "example:settlement": "npm run build && node dist/examples/settlement-gateway.js",
+    "test:ui": "npm run build && node dist/examples/test-ui.js",
+    "accounts:ui": "npm run build && node dist/examples/accounts-ui.js",
+    "welcome:ui": "npm run build && node dist/examples/welcome-ui.js",
+    "login:smoke": "npm run build && node dist/examples/auth-login.js",
+    "prepublishOnly": "npm run lint && npm run test && npm run build"
+  },
+  "engines": {
+    "node": ">=18.17"
+  },
+  "keywords": [
+    "agentic-payments",
+    "ai-agents",
+    "agent-payments",
+    "payment-intent",
+    "x402",
+    "spending-limits",
+    "agent-budget",
+    "agent-governance",
+    "machine-payments",
+    "autonomous-agents",
+    "typescript",
+    "payments",
+    "usdc",
+    "stablecoin",
+    "viem",
+    "mcp",
+    "xagent",
+    "xpense"
+  ],
+  "homepage": "https://xagent-labs.github.io/xpense/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xagent-labs/xpense.git"
+  },
+  "license": "UNLICENSED",
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.60.0",
+    "@types/node": "^25.6.0",
+    "prettier": "^3.8.3",
+    "typescript": "^6.0.3",
+    "vitepress": "^1.6.4",
+    "vitest": "^4.1.5"
+  },
+  "dependencies": {
+    "viem": "^2.52.2"
+  }
+}

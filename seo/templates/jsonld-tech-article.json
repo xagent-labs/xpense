@@ -1,0 +1,26 @@
+{
+  "_comment": "JSON-LD TechArticle — inject on each GUIDE / BLOG page. Fill headline/description/dates per page. Strongest signal for long-tail content ranking.",
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "{{ARTICLE_TITLE}}",
+  "description": "{{ARTICLE_DESCRIPTION}}",
+  "url": "https://xpense.xagent.dev{{PATH}}",
+  "datePublished": "{{YYYY-MM-DD}}",
+  "dateModified": "{{YYYY-MM-DD}}",
+  "author": {
+    "@type": "Organization",
+    "name": "XAgent",
+    "url": "https://github.com/xagent-labs"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Xpense",
+    "url": "https://xpense.xagent.dev"
+  },
+  "about": {
+    "@type": "SoftwareApplication",
+    "name": "Xpense",
+    "applicationCategory": "DeveloperApplication"
+  },
+  "proficiencyLevel": "Beginner"
+}

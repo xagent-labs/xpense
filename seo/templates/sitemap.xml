@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Xpense sitemap — STRUCTURE REFERENCE. Generate this at build time (don't hand-maintain).
+  VitePress: sitemap config. Nextra: next-sitemap. Astro: @astrojs/sitemap.
+  Swap host for real domain; set real <lastmod> dates at build.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url><loc>https://xpense.xagent.dev/</loc><lastmod>2026-06-07</lastmod><priority>1.0</priority></url>
+
+  <!-- Guides (task-oriented, highest content-SEO value) -->
+  <url><loc>https://xpense.xagent.dev/guides/getting-started</loc><priority>0.8</priority></url>
+  <url><loc>https://xpense.xagent.dev/guides/emit-first-payment-intent</loc><priority>0.8</priority></url>
+  <url><loc>https://xpense.xagent.dev/guides/set-budgets-and-approval</loc><priority>0.8</priority></url>
+  <url><loc>https://xpense.xagent.dev/guides/pay-on-402</loc><priority>0.8</priority></url>
+  <url><loc>https://xpense.xagent.dev/guides/settle-via-xerpaai-go</loc><priority>0.7</priority></url>
+  <url><loc>https://xpense.xagent.dev/guides/inject-into-an-agent</loc><priority>0.7</priority></url>
+  <url><loc>https://xpense.xagent.dev/guides/authentication</loc><priority>0.6</priority></url>
+
+  <!-- Docs: introduction -->
+  <url><loc>https://xpense.xagent.dev/docs/introduction/why-xpense</loc><priority>0.7</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/introduction/mental-model</loc><priority>0.6</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/introduction/installation</loc><priority>0.6</priority></url>
+
+  <!-- Docs: governance (spending-limits keyword cluster) -->
+  <url><loc>https://xpense.xagent.dev/docs/governance/policy</loc><priority>0.6</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/governance/gate</loc><priority>0.5</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/governance/approval</loc><priority>0.5</priority></url>
+
+  <!-- Docs: intent -->
+  <url><loc>https://xpense.xagent.dev/docs/intent/builder</loc><priority>0.6</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/intent/lifecycle</loc><priority>0.5</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/intent/types</loc><priority>0.5</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/intent/validate</loc><priority>0.5</priority></url>
+
+  <!-- Docs: settlement -->
+  <url><loc>https://xpense.xagent.dev/docs/settlement/onchainos</loc><priority>0.5</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/settlement/pay-fetch</loc><priority>0.5</priority></url>
+  <url><loc>https://xpense.xagent.dev/docs/settlement/submit</loc><priority>0.5</priority></url>
+
+  <!-- remaining API refs (facade, agent, money, access) at 0.5 — enumerate at build -->
+
+</urlset>

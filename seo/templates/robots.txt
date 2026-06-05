@@ -1,0 +1,10 @@
+# Xpense docs robots.txt — swap host for real domain.
+User-agent: *
+Allow: /
+
+# Block non-content / interactive surfaces (uncomment if they exist)
+# Disallow: /playground
+# Disallow: /api/auth/
+# Disallow: /oauth/
+
+Sitemap: https://xpense.xagent.dev/sitemap.xml

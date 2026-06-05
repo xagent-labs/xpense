@@ -1,0 +1,39 @@
+<!--
+  Xpense docs-site <head> SEO template.
+  Replace {{PLACEHOLDERS}} per page. Host shown as https://xpense.xagent.dev — swap for real domain.
+  Drop into your SSG's head config (VitePress: transformHead / Nextra: useNextSeoProps / Astro: <head>).
+-->
+
+<!-- Primary -->
+<title>{{TITLE}}</title>
+<meta name="description" content="{{DESCRIPTION}}" />
+<link rel="canonical" href="https://xpense.xagent.dev{{PATH}}" />
+<meta name="robots" content="index, follow" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="{{OG_TYPE}}" />
+<!-- website | article -->
+<meta property="og:site_name" content="Xpense" />
+<meta property="og:title" content="{{TITLE}}" />
+<meta property="og:description" content="{{DESCRIPTION}}" />
+<meta property="og:url" content="https://xpense.xagent.dev{{PATH}}" />
+<meta property="og:image" content="https://xpense.xagent.dev/og/{{OG_IMAGE}}" />
+<!-- 1200x630 PNG -->
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="{{TITLE}}" />
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="{{TITLE}}" />
+<meta name="twitter:description" content="{{DESCRIPTION}}" />
+<meta name="twitter:image" content="https://xpense.xagent.dev/og/{{OG_IMAGE}}" />
+<!-- <meta name="twitter:site" content="@xagent" /> add when handle exists -->
+
+<!-- ===== Example: landing page values =====
+TITLE       = Xpense — Agentic Payments SDK for TypeScript
+DESCRIPTION = Give AI agents spending limits, budgets and approval. Emit audited Payment Intents and settle via x402 — all in TypeScript.
+PATH        = /
+OG_TYPE     = website
+OG_IMAGE    = home.png
+-->
