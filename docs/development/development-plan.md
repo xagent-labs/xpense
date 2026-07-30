@@ -9,7 +9,7 @@ Developers should build product features while X-Agent provides model routing, e
 ### Public SDK
 
 - Maintain the English-first README, integration guides, runtime contract, tests, and mocks.
-- Add a session-scoped `createXAgentClient()` after the private Gateway API is available.
+- Maintain the session-scoped `createXAgentClient()` for Gateway model calls; it exposes OpenRouter model choice without exposing secrets or billing internals.
 - Add thin OpenAI-compatible and LangChain adapters.
 
 ### Private Commerce Gateway

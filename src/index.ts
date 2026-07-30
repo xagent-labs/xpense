@@ -1,6 +1,15 @@
 export { Xpense } from "./agent/xpense.ts";
 export type { XpenseOptions } from "./agent/xpense.ts";
 
+export { createXAgentClient, XAgentGatewayClient, XAgentGatewayError } from "./gateway/client.ts";
+export type {
+  GatewayChatRequest,
+  GatewayChatResult,
+  GatewayModelProvider,
+  GatewayReceipt,
+  XAgentGatewayClientOptions
+} from "./gateway/client.ts";
+
 export { createXAgent, XAgentRuntime } from "./runtime/runtime.ts";
 export {
   IdempotencyConflictError,

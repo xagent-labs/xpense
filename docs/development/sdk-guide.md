@@ -8,7 +8,7 @@ This guide is for developers building AI products with vibe coding, LangChain, t
 
 1. Start with `Xpense` in `dry-run` mode and validate Payment Intent/budget behavior.
 2. Add `createPayFetch` around paid external APIs; only server code may call wallet or backend signing.
-3. When the Gateway is available, call its short-lived end-user-session model API. Do not implement real reserve/settle in the application or browser.
+3. Use `createXAgentClient()` with a short-lived end-user session and choose an approved OpenRouter model in `chat()`. Do not implement real reserve/settle in the application or browser.
 4. Add LangChain or MCP adapters with a budget per Agent task.
 
 ## Payment Intent and policy
@@ -43,6 +43,18 @@ Request → 402 → validate offer → authorize policy/budget → backend signi
 - Perform wallet signing only in a server-side trusted execution boundary.
 
 ## Runtime and private Gateway
+
+```ts
+const xagent = createXAgentClient({ baseUrl, sessionToken });
+await xagent.chat({
+  requestId: "chat_01J...",
+  provider: "openrouter",
+  model: "anthropic/claude-sonnet-4", // developer-selected model
+  messages: [{ role: "user", content: "Draft a release note" }]
+});
+```
+
+`provider` currently accepts `openrouter`. The Gateway checks the project's provider/model allowlist, output limits, and price policy. A client-supplied model is a preference, never an authorization to spend.
 
 The SDK `createXAgent()` ports (`BillingPort` and `ModelProvider`) define the expected safety state machine and support SDK testing. They are trusted server-side ports, not browser integration points.
 

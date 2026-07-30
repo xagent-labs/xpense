@@ -79,6 +79,30 @@ const response = await payFetch("https://provider.example/paid-resource");
 
 The wrapper retries exactly once. `GET`/`HEAD` are retryable by default. A `POST` or other unsafe method requires a caller-created `Idempotency-Key` and explicit `allowUnsafeReplay: true`. Redirected 402s, oversized challenges, a second 402, and unsafe credential headers are rejected or stop automatic handling.
 
+## Choose an OpenRouter model through X-Agent
+
+Once the private Gateway is configured, the application uses a short-lived end-user session and chooses the OpenRouter model in code. It never receives an OpenRouter key, project secret, or wallet credential.
+
+```ts
+import { createXAgentClient } from "@xagent/xpense";
+
+const xagent = createXAgentClient({
+  baseUrl: "https://api.your-xagent-gateway.com/",
+  sessionToken: endUserSessionToken
+});
+
+const result = await xagent.chat({
+  requestId: "chat_01J...",
+  provider: "openrouter",
+  model: "openai/gpt-5-mini", // developer selects the model
+  messages: [{ role: "user", content: "Summarize this conversation" }]
+});
+
+console.log(result.content, result.receipt.receiptId);
+```
+
+The Gateway validates the project's model allowlist and pricing policy, reserves funds, routes the call, settles actual usage, and returns the receipt. Model choice is a developer concern; authorization, final pricing, and money movement are Gateway concerns.
+
 ## Runtime boundary
 
 `createXAgent()` is a server-side reference contract, not yet the hosted client a vibe-coded application calls directly:
