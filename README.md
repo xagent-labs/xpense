@@ -1,12 +1,11 @@
-# @xagent/xpense — Agentic Payments SDK for TypeScript
+# @xagent/xpense — X-Agent Commerce SDK for TypeScript
 
 [![npm version](https://img.shields.io/npm/v/@xagent/xpense)](https://www.npmjs.com/package/@xagent/xpense)
 [![npm downloads](https://img.shields.io/npm/dm/@xagent/xpense)](https://www.npmjs.com/package/@xagent/xpense)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](https://www.typescriptlang.org/)
 [![ESM only](https://img.shields.io/badge/module-ESM-f7df1e)](https://nodejs.org/api/esm.html)
-[![License](https://img.shields.io/badge/license-proprietary-lightgrey)](#license)
 
-**Xpense is a TypeScript SDK for agentic payments** — it lets an AI agent spend money safely. Give an agent **spending limits** (per-transaction, daily and total budgets, per currency), require **human approval** above a threshold, and turn every "the agent wants to pay" moment into a validated, auditable **Payment Intent** before anything settles. Xpense is the **governance + intent layer**: protocol-agnostic, it never holds keys, and it settles through an on-chain API (HTTP **x402** / machine payments) on **X Layer**. Amounts are exact integers via [`viem`](https://viem.sh) — never floats.
+**X-Agent is the SDK boundary for monetized AI products.** The `@xagent/xpense` package provides developer-facing contracts: model execution, spend governance, typed Payment Intents, and protocol adapters. The X-Agent Commerce Gateway owns real user accounts, top-ups, provider credentials, model routing, durable ledgers, and wallet operations; its implementation is not in this repository. An OSI license must be selected before this SDK is represented as open source. Amounts are exact integers via [`viem`](https://viem.sh) — never floats.
 
 ```
  agent ──emit──▶  Payment Intent  ──▶  Governance  ──▶  Settlement
@@ -16,7 +15,7 @@
 
 > The model **proposes** a spend. Your **policy** decides. xerpaai-go **settles**. The agent never touches a key.
 
-— [Install](#install) · [Quick start](#quick-start) · [Payment Intents](#payment-intents) · [Budgets & governance](#budgets--governance) · [Settlement](#settlement-on-x-layer) · [Pay-on-402](#pay-on-402) · [CLI](#cli) · [Try it locally](#try-it-locally) · [Docs](#docs)
+— [Install](#install) · [X-Agent runtime](#x-agent-runtime) · [Payment Intents](#payment-intents) · [Budgets & governance](#budgets--governance) · [Settlement](#settlement-on-x-layer) · [Pay-on-402](#pay-on-402) · [CLI](#cli) · [Try it locally](#try-it-locally) · [Docs](#docs)
 
 ## Install
 
@@ -52,6 +51,33 @@ const { intent, submit } = await xpense.emit({
 ```
 
 `emit()` builds the intent, runs it through the governance gate (budget + approval), and records it. By default `mode` is `dry-run` — nothing settles. Real settlement is an explicit step through the gateway (below).
+
+## X-Agent runtime
+
+`createXAgent()` is the framework-neutral **server-side reference contract** for a billable model call. It validates the user/project/request context, reserves a maximum charge, invokes one trusted model provider, settles actual usage, and returns a receipt. It is not yet the hosted Gateway client that a vibe-coded app will use directly.
+
+```ts
+import { createXAgent, type BillingPort, type ModelProvider } from "@xagent/xpense";
+
+// Production implementations live in the closed X-Agent Commerce Gateway.
+declare const billing: BillingPort;
+declare const model: ModelProvider;
+
+const ai = createXAgent({ billing, model });
+
+const result = await ai.chat({
+  requestId: "chat_01J...",
+  userId: "user_123",
+  projectId: "proj_vibe_app",
+  model: "auto",
+  maxCharge: { amount: "0.05", currency: "USD" },
+  messages: [{ role: "user", content: "Summarise this conversation" }]
+});
+
+console.log(result.content, result.receipt.receiptId);
+```
+
+The SDK includes `InMemoryBilling` only for tests and local demos. It is not a wallet, top-up system, or production ledger. See [Commerce Runtime](docs/runtime/commerce-runtime.md) for the backend boundary and recovery rules.
 
 ## Payment Intents
 

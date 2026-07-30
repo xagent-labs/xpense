@@ -18,6 +18,7 @@
 ## Layers (code = business)
 
 ```
+runtime/      L7 商业执行层 — X-Agent chat orchestration · reserve → invoke → settle · receipt contract
 agent/        L7 应用层 — Xpense facade · capabilities (tools) · inject · ledger · default-store · adapters/(planned: langchain/openai/mcp)
 intent/       L6 意图   — PaymentIntent (AP2 intent + ACP allowance + mandate refs + lifecycle)
 governance/   L5 治理   — budget gate + approval + revoke  ← differentiation, abstract it out
@@ -28,7 +29,7 @@ money.ts · http.ts · config.ts · cli.ts · index.ts
 
 xpense calls the xerpaai-go on-chain API — it does **not** sign transactions, hold keys, or stub endpoints xerpaai-go has not built. Settlement primitives = `x402/sign` (HTTP-402) and `mpp/charge` (machine-payment deduction).
 
-The directory tree narrates the spend lifecycle: **Goal → Workflow/Task (agent) → Intent → Governance → Settlement.**
+The directory tree narrates the spend lifecycle: **User/Task → Runtime reservation → Model or capability → Exact settlement → Receipt.** `runtime/` is open-source orchestration only; its production BillingPort and ModelProvider implementations belong to the closed X-Agent Commerce Gateway.
 
 ## Payment Intent object (target)
 
@@ -51,7 +52,9 @@ Funding credentials are referenced, never embedded. `schemaVersion` stays `"1"`;
 2. **governance/** — approval + revoke on top of the per-currency budget engine. The moat. _(done)_
 3. **access/** — OAuth login + credential store + token refresh → scoped JWT for xerpaai-go. _(done)_
 4. **settlement/** — `OnchainosGateway` over xerpaai-go `/user/onchainos/*` (wallet · x402/sign · mpp/charge · default-asset). _(done; gaps tracked as xerpaai-go issues, never stubbed)_
-5. **agent/adapters/** + MCP server — one tool definition, many frameworks. The distribution shape. _(next)_
+5. **runtime/** — framework-neutral `createXAgent()` contract: user/project context, model invocation, reserve → settle, receipt and SDK-local idempotency. _(done; reference adapter only)_
+6. **closed Commerce Gateway** — durable tenant ledger, top-up, model routing, account/session API and recovery. _(next, separate service)_
+7. **agent/adapters/** + MCP server — one tool definition, many frameworks. The distribution shape. _(planned)_
 
 ## Never
 

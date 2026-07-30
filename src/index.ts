@@ -1,6 +1,35 @@
 export { Xpense } from "./agent/xpense.ts";
 export type { XpenseOptions } from "./agent/xpense.ts";
 
+export { createXAgent, XAgentRuntime } from "./runtime/runtime.ts";
+export {
+  IdempotencyConflictError,
+  IndeterminateExecutionError,
+  ModelCallError,
+  RuntimeValidationError,
+  SettlementPendingError,
+  SettlementError,
+  SettlementRecoveryRequiredError
+} from "./runtime/types.ts";
+export type {
+  BillingPort,
+  BillingReceipt,
+  BillingReservation,
+  BillingReservationInput,
+  BillingSettlementInput,
+  ChatMessage,
+  ChatRequest,
+  ChatResult,
+  ChatRole,
+  ModelCompletion,
+  ModelCallOptions,
+  ModelFailureOutcome,
+  ModelInvocation,
+  ModelProvider,
+  ModelUsage,
+  XAgentRuntimeOptions
+} from "./runtime/types.ts";
+
 export { resolveConfig } from "./config.ts";
 export type { XpenseConfig } from "./config.ts";
 

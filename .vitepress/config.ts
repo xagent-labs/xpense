@@ -34,7 +34,7 @@ export default defineConfig({
     nav: [
       { text: "Guides", link: "/guides/getting-started" },
       { text: "Docs", link: "/docs/" },
-      { text: "GitHub", link: "https://github.com/xagent-labs/xpense" }
+      { text: "GitHub", link: "https://github.com/xagentAI/xpense" }
     ],
     sidebar: {
       "/guides/": [
@@ -80,6 +80,10 @@ export default defineConfig({
             { text: "Xpense", link: "/docs/facade/xpense" },
             { text: "resolveConfig / XpenseConfig", link: "/docs/facade/config" }
           ]
+        },
+        {
+          text: "X-Agent Runtime",
+          items: [{ text: "Commerce Runtime", link: "/docs/runtime/commerce-runtime" }]
         },
         {
           text: "Intent",
@@ -130,10 +134,10 @@ export default defineConfig({
         }
       ]
     },
-    socialLinks: [{ icon: "github", link: "https://github.com/xagent-labs/xpense" }],
+    socialLinks: [{ icon: "github", link: "https://github.com/xagentAI/xpense" }],
     search: { provider: "local" },
     editLink: {
-      pattern: "https://github.com/xagent-labs/xpense/edit/main/:path",
+      pattern: "https://github.com/xagentAI/xpense/edit/main/:path",
       text: "Edit this page on GitHub"
     },
     footer: {

@@ -64,7 +64,7 @@
   "homepage": "https://xagent-labs.github.io/xpense/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xagent-labs/xpense.git"
+    "url": "git+https://github.com/xagentAI/xpense.git"
   },
   "license": "UNLICENSED",
   "publishConfig": {
