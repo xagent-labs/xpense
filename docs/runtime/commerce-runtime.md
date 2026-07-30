@@ -79,11 +79,10 @@ webhooks.
 
 For every invocation the Gateway must persist an execution, reservation, provider
 attempt (including provider idempotency key and deadline), usage, settlement,
-receipt, and delivery record. Its unique idempotency constraint is tenant + project
-
-- user + request key plus a request hash. After an unknown provider outcome or a
-  settlement/delivery failure, the Gateway reconciles the stored provider attempt;
-  it never invokes the provider a second time merely because an SDK process restarted.
+receipt, and delivery record. Its unique idempotency constraint is tenant + project +
+user + request key plus a request hash. After an unknown provider outcome or a
+settlement/delivery failure, the Gateway reconciles the stored provider attempt;
+it never invokes the provider a second time merely because an SDK process restarted.
 
 The gateway, not the SDK or model provider adapter, calculates the end-user charge
 from its versioned project price policy. It may retain raw provider cost and the

@@ -1,219 +1,116 @@
-# @xagent/xpense — X-Agent Commerce SDK for TypeScript
+# X-Agent SDK
 
-[![npm version](https://img.shields.io/npm/v/@xagent/xpense)](https://www.npmjs.com/package/@xagent/xpense)
-[![npm downloads](https://img.shields.io/npm/dm/@xagent/xpense)](https://www.npmjs.com/package/@xagent/xpense)
-[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6)](https://www.typescriptlang.org/)
-[![ESM only](https://img.shields.io/badge/module-ESM-f7df1e)](https://nodejs.org/api/esm.html)
+`@xagent/xpense` 是 X-Agent 的 TypeScript SDK：让开发者把 Agent 支出控制、HTTP 402 付费调用，以及未来的“按实际 AI 用量收费”接入自己的产品。
 
-**X-Agent is the SDK boundary for monetized AI products.** The `@xagent/xpense` package provides developer-facing contracts: model execution, spend governance, typed Payment Intents, and protocol adapters. The X-Agent Commerce Gateway owns real user accounts, top-ups, provider credentials, model routing, durable ledgers, and wallet operations; its implementation is not in this repository. An OSI license must be selected before this SDK is represented as open source. Amounts are exact integers via [`viem`](https://viem.sh) — never floats.
+它的目标不是让开发者再造一套钱包、充值、积分和模型计费系统，而是提供统一的开发者入口：开发者专注产品功能，X-Agent 负责把一次可收费能力调用组织为可控制、可审计的执行。
 
-```
- agent ──emit──▶  Payment Intent  ──▶  Governance  ──▶  Settlement
-                  typed · audited       budget + approval     x402 / mpp · X Layer
-                                        keys never reach the model
-```
+> 本仓库只包含开源 SDK、类型、文档、示例和测试 mock。真实用户账户、充值、模型密钥、路由、持久化账本、钱包和结算服务属于闭源 X-Agent Commerce Gateway，绝不放入 SDK 或浏览器。
 
-> The model **proposes** a spend. Your **policy** decides. xerpaai-go **settles**. The agent never touches a key.
+## 当前能力
 
-— [Install](#install) · [X-Agent runtime](#x-agent-runtime) · [Payment Intents](#payment-intents) · [Budgets & governance](#budgets--governance) · [Settlement](#settlement-on-x-layer) · [Pay-on-402](#pay-on-402) · [CLI](#cli) · [Try it locally](#try-it-locally) · [Docs](#docs)
+| 能力                         | 当前状态  | 说明                                                                       |
+| ---------------------------- | --------- | -------------------------------------------------------------------------- |
+| Payment Intent 与预算治理    | 可用      | 精确金额、单笔/每日/总预算、审批、撤销与审计字段。                         |
+| OKX / Onchain OS 接入        | 可用      | 钱包状态、登录、余额、`x402/sign`、`mpp/charge` 的类型化客户端。           |
+| HTTP 402 paid-call loop      | 可用      | Challenge → 策略/钱包回调 → Credential → 单次安全重试。                    |
+| X-Agent Commerce Runtime     | Reference | `reserve → invoke → settle → receipt` 合约和本地测试适配器；不是生产账本。 |
+| 终端用户余额、充值、模型网关 | 计划中    | 由闭源 Commerce Gateway 实现。                                             |
+| LangChain / OpenAI adapter   | 计划中    | 以 Runtime/Gateway Client 为基础提供薄适配层。                             |
 
-## Install
+## 安装
 
-```sh
+```bash
 npm install @xagent/xpense
 ```
 
-Requires Node `>=18.17`. ESM only.
+要求 Node.js `>=18.17`，ESM 项目。
 
-## Quick start
+## 快速开始：先把 Agent 支出放进治理层
+
+默认是 `dry-run`，不会移动真实资金，适合先在产品中接入和测试。
 
 ```ts
 import { Xpense } from "@xagent/xpense";
 
 const xpense = new Xpense({
+  mode: "dry-run",
   actor: "research-agent",
   budget: {
-    perTxn: { amount: "5", currency: "USDC" },
-    daily: { amount: "50", currency: "USDC" },
-    total: { amount: "500", currency: "USDC" }
+    perTxn: { amount: "1", currency: "USDC" },
+    daily: { amount: "10", currency: "USDC" }
   }
 });
 
-await xpense.login(); // browser / device / paste OAuth against XAgent
-
 const { intent, submit } = await xpense.emit({
-  reason: { category: "api", description: "Weather data API call" },
-  counterparty: { kind: "api", name: "weatherapi.com" },
+  reason: { category: "api", description: "购买一次天气数据查询" },
+  counterparty: { kind: "api", name: "weather.example" },
   amount: { kind: "fixed", value: { amount: "0.25", currency: "USDC" } },
   approval: { mode: "policy" },
   policy: { allowedCurrencies: ["USDC"] }
 });
+
+console.log(intent.id, submit.status); // dry_run
 ```
 
-`emit()` builds the intent, runs it through the governance gate (budget + approval), and records it. By default `mode` is `dry-run` — nothing settles. Real settlement is an explicit step through the gateway (below).
+金额始终是字符串，例如 `"0.25"`，SDK 内部使用 `bigint`，不要传 JavaScript 浮点数。
 
-## X-Agent runtime
+## 接入付费 API：安全处理 402
 
-`createXAgent()` is the framework-neutral **server-side reference contract** for a billable model call. It validates the user/project/request context, reserves a maximum charge, invokes one trusted model provider, settles actual usage, and returns a receipt. It is not yet the hosted Gateway client that a vibe-coded app will use directly.
-
-```ts
-import { createXAgent, type BillingPort, type ModelProvider } from "@xagent/xpense";
-
-// Production implementations live in the closed X-Agent Commerce Gateway.
-declare const billing: BillingPort;
-declare const model: ModelProvider;
-
-const ai = createXAgent({ billing, model });
-
-const result = await ai.chat({
-  requestId: "chat_01J...",
-  userId: "user_123",
-  projectId: "proj_vibe_app",
-  model: "auto",
-  maxCharge: { amount: "0.05", currency: "USD" },
-  messages: [{ role: "user", content: "Summarise this conversation" }]
-});
-
-console.log(result.content, result.receipt.receiptId);
-```
-
-The SDK includes `InMemoryBilling` only for tests and local demos. It is not a wallet, top-up system, or production ledger. See [Commerce Runtime](docs/runtime/commerce-runtime.md) for the backend boundary and recovery rules.
-
-## Payment Intents
-
-Every spend is a typed, auditable Payment Intent — never a raw transaction. Build and validate them directly:
-
-```ts
-import { PaymentIntentBuilder, validatePaymentIntent } from "@xagent/xpense";
-
-const pi = PaymentIntentBuilder.for({ agentId: "agent-1", goal: "buy dataset" })
-  .reason({ category: "data", description: "Dataset license" })
-  .payTo({ kind: "merchant", name: "Acme Data" })
-  .fixedAmount({ amount: "12.50", currency: "USDC" })
-  .withPolicy({ allowedCurrencies: ["USDC"] })
-  .build("agent-1");
-
-const errors = validatePaymentIntent(pi); // [] when valid
-```
-
-Amounts are **decimal strings** (`"12.50"`), never JS numbers — precision is preserved across currencies and on-chain tokens. A lifecycle state machine guards status transitions:
-
-```
-pending → authorized → executing → settled | failed | revoked
-```
-
-## Budgets & governance
-
-`PolicyEngine` enforces per-transaction / daily / total limits **per currency** with exact integer math; `GovernanceGate` layers approval + revoke on top:
-
-```ts
-import { PolicyEngine, GovernanceGate, BudgetExceededError } from "@xagent/xpense";
-
-const gate = new GovernanceGate(new PolicyEngine({ daily: { amount: "100", currency: "USDC" } }));
-
-const decision = gate.authorize(pi); // "authorized" | "rejected" | "requires_approval"
-// ...on settlement failure:
-gate.revoke(pi); // roll the reservation back
-```
-
-- `reserve()` checks and reserves atomically — safe when multiple agents settle in parallel.
-- Limits are tracked **independently per currency**; the daily counter resets at the UTC day boundary.
-- Over-limit raises `BudgetExceededError`; human-mode or above-threshold intents return `requires_approval` without consuming budget.
-
-This governance layer is the point of xpense: spending limits, approval chains and audit trails that the settlement rails themselves don't give you.
-
-## Settlement on X Layer
-
-xpense is a thin, typed client over the xerpaai-go `/user/onchainos/*` API. It calls that API to settle on **X Layer**; it does not sign transactions or hold keys.
-
-```ts
-const gw = await xpense.gateway(); // typed client, JWT from login()
-
-await gw.walletStatus();
-await gw.x402Sign({ accepts, resource: "/api/inference" }); // HTTP-402 settlement
-await gw.mppCharge({ challenge }); // machine-payment deduction
-```
-
-Covered endpoints: `wallet/{status,login,verify,addresses,balance,logout}`, `x402/sign`, `mpp/charge`, `default-asset/{get,set,unset}`. Anything the backend has not implemented is **not** stubbed here.
-
-## Pay-on-402
-
-Wrap `fetch` to complete one policy-controlled HTTP `402 Payment Required` call. The callback owns Intent creation, budget/policy authorization, and the scoped backend call; it returns only the payment header used for one retry.
+`createPayFetch` 只负责安全编排，不持有私钥，也不会自行决定支出。你的服务端回调必须先验证报价、创建/授权 Intent，再向闭源钱包/后端申请 credential。
 
 ```ts
 import { createPayFetch } from "@xagent/xpense";
 
 const payFetch = createPayFetch({
-  onPaymentRequired: async (challenge, { url }) => {
-    // authorize a Payment Intent in your app, then call the scoped backend
+  onPaymentRequired: async (challenge, request) => {
+    // 先校验 challenge.body，检查商户、金额、资产与资源地址。
     const signed = await gateway.x402Sign({
       accepts: (challenge.body as { accepts: unknown }).accepts,
-      resource: url
+      resource: request.url
     });
+
     return { headers: { [signed.headerName]: signed.authorizationHeader } };
   }
 });
 
-await payFetch("https://api.example.com/paid-resource");
+const response = await payFetch("https://provider.example/paid-resource");
 ```
 
-The wrapper retries exactly once. `GET` and `HEAD` are safe by default. For `POST` / other non-safe requests, pass a provider-supported `Idempotency-Key` and set `allowUnsafeReplay: true`; otherwise xpense rejects the 402 before policy or wallet code is invoked.
+规则：只自动重试一次；`GET`/`HEAD` 默认可重试；`POST` 等非安全方法必须同时提供调用方生成的 `Idempotency-Key`，并显式设置 `allowUnsafeReplay: true`。重定向后的 402、超大 Challenge、第二个 402 和危险 credential header 都会被拒绝或停止自动处理。
 
-## CLI
+## X-Agent Runtime 的边界
 
-```sh
-xpense login                                   # authenticate (loopback | device | paste)
-xpense bench --amount 2 --budget 1             # mock a spend, see the governance decision
-xpense bench                                   # no flags → interactive
+`createXAgent()` 是 SDK 内的服务端 reference contract：
+
+```text
+requestId + user/project context
+  → reserve max charge
+  → invoke trusted model provider
+  → settle exact usage
+  → receipt + delivered result
 ```
 
-`bench` is flag-first so agents and scripts can drive it; with no flags it drops into an interactive prompt.
+它用于约束未来 LangChain、OpenAI SDK、MCP adapter 的一致行为。它**不是**面向浏览器的充值/钱包 SDK，也不是已经上线的 hosted model gateway。生产系统必须由闭源 Gateway 提供：鉴权、项目隔离、持久化 idempotency、provider 对账、余额、充值、模型路由、收据和恢复。
 
-## Try it locally
+## 开发与验证
 
-Three mock surfaces — nothing real moves, no login required:
-
-```sh
-npm run welcome:ui     # landing page            → http://localhost:4700
-npm run test:ui        # emit test bench         → http://localhost:4500
-npm run accounts:ui    # account console         → http://localhost:4600
+```bash
+npm test
+npm run lint
+npm run build
+npm run e2e
+npm run docs:build
 ```
 
-Scenario scripts (run and read the output):
+完整中文接入说明见 [SDK 开发指南](docs/zh-CN/sdk-guide.md)，实施顺序见 [开发计划](docs/zh-CN/development-plan.md)。
 
-```sh
-npm run example:governance    # budget reject + approval gate, three outcomes
-npm run example:settlement    # the exact payloads xpense sends to xerpaai-go
-```
+## 安全底线
 
-## Auth
+- 不把项目 secret、provider key、钱包私钥或 access token 放进浏览器、Git、日志或 URL。
+- 终端用户身份必须由闭源 Gateway 的短期 session 确定；服务端不信任客户端提交的 `userId`、余额或价格。
+- 真实扣费必须遵循预留、结算、收据、对账与幂等约束；SDK 的内存状态不能替代生产账本。
+- 402 回调必须校验商户、资源、资产和金额，不能对未知 Challenge 直接签名。
 
-`login(mode)` supports `"loopback"` (default browser), `"device"`, and `"paste"` OAuth flows against XAgent. Credentials are stored at `~/.config/xagent/credentials.json` (mode `0600`; `%APPDATA%\xagent` on Windows) and access tokens auto-refresh.
+## 许可证
 
-## Configuration
-
-| Env                    | Default                   | Purpose                       |
-| ---------------------- | ------------------------- | ----------------------------- |
-| `XAGENT_API_BASE`      | `https://api.xerpaai.com` | xerpaai-go API base           |
-| `XAGENT_FRONTEND_BASE` | `https://www.xerpaai.com` | OAuth login frontend          |
-| `XAGENT_PI_MODE`       | `dry-run`                 | `live` \| `dry-run` \| `mock` |
-
-## Docs
-
-- [`docs/`](./docs) — API reference, one page per export, grouped by layer.
-- [`guides/`](./guides) — task-oriented walkthroughs (getting started, budgets, settlement, agent injection).
-- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — the layered blueprint and where xpense sits in the agent payment stack.
-
-## Scripts
-
-| Command          | Purpose                          |
-| ---------------- | -------------------------------- |
-| `npm run build`  | `tsc` → `dist/`                  |
-| `npm run lint`   | type-check (`tsc --noEmit`)      |
-| `npm test`       | vitest unit suite                |
-| `npm run e2e`    | playwright gateway-payload check |
-| `npm run format` | prettier                         |
-
-## License
-
-Proprietary — © XAgent. All rights reserved.
+SDK 的开源许可证尚待项目方确认；在添加 OSI 许可证文件前，`package.json` 仍标记为 `UNLICENSED`。闭源 Commerce Gateway 不随 SDK 发布。

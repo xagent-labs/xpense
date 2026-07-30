@@ -67,6 +67,13 @@ export default defineConfig({
       ],
       "/docs/": [
         {
+          text: "中文文档",
+          items: [
+            { text: "SDK 开发指南", link: "/docs/zh-CN/sdk-guide" },
+            { text: "开发计划", link: "/docs/zh-CN/development-plan" }
+          ]
+        },
+        {
           text: "Introduction",
           items: [
             { text: "Why Xpense", link: "/docs/introduction/why-xpense" },
