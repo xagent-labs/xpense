@@ -1,6 +1,44 @@
 export { Xpense } from "./agent/xpense.ts";
 export type { XpenseOptions } from "./agent/xpense.ts";
 
+export { createXAgentClient, XAgentGatewayClient, XAgentGatewayError } from "./gateway/client.ts";
+export type {
+  GatewayChatRequest,
+  GatewayChatResult,
+  GatewayModelProvider,
+  GatewayReceipt,
+  XAgentGatewayClientOptions
+} from "./gateway/client.ts";
+
+export { createXAgent, XAgentRuntime } from "./runtime/runtime.ts";
+export {
+  IdempotencyConflictError,
+  IndeterminateExecutionError,
+  ModelCallError,
+  RuntimeValidationError,
+  SettlementPendingError,
+  SettlementError,
+  SettlementRecoveryRequiredError
+} from "./runtime/types.ts";
+export type {
+  BillingPort,
+  BillingReceipt,
+  BillingReservation,
+  BillingReservationInput,
+  BillingSettlementInput,
+  ChatMessage,
+  ChatRequest,
+  ChatResult,
+  ChatRole,
+  ModelCompletion,
+  ModelCallOptions,
+  ModelFailureOutcome,
+  ModelInvocation,
+  ModelProvider,
+  ModelUsage,
+  XAgentRuntimeOptions
+} from "./runtime/types.ts";
+
 export { resolveConfig } from "./config.ts";
 export type { XpenseConfig } from "./config.ts";
 
@@ -53,8 +91,17 @@ export type { ApprovalDecision } from "./governance/approval.ts";
 
 export { PaymentSession } from "./agent/ledger.ts";
 export type { SessionEntry } from "./agent/ledger.ts";
-export { createPayFetch } from "./settlement/pay-fetch.ts";
-export type { PayFetchOptions } from "./settlement/pay-fetch.ts";
+export {
+  createPayFetch,
+  PaymentChallengeTooLargeError,
+  UnsafePaymentReplayError
+} from "./settlement/pay-fetch.ts";
+export type {
+  PaymentChallenge,
+  PaymentCredential,
+  PaymentRequiredRequest,
+  PayFetchOptions
+} from "./settlement/pay-fetch.ts";
 
 export { buildInjection } from "./agent/inject.ts";
 export type {

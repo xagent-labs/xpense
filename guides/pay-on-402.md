@@ -4,9 +4,9 @@ Goal: have `fetch` react to HTTP `402 Payment Required` — emit a Payment Inten
 
 ## Steps
 
-1. **Wrap fetch** — `createPayFetch({ onPaymentRequired })`. The wrapper passes everything through and only fires your callback on a 402.
-2. **In the callback** — parse the challenge, `xpense.emit(...)` a Payment Intent, then `gw.x402Sign(...)` to settle.
-3. **Note** — the callback is side-effect-only today; it does not auto-retry the request (open design decision, SPEC §6).
+1. **Wrap fetch** — `createPayFetch({ onPaymentRequired })`. The wrapper passes normal responses through and handles one 402 payment retry.
+2. **In the callback** — validate the challenge, `xpense.emit(...)` a Payment Intent, then call `gw.x402Sign(...)` for a credential.
+3. **Return the credential** — the wrapper attaches it and retries the same request exactly once. xpense never holds a private key.
 
 ```ts
 import { createPayFetch } from "@xagent/xpense";
@@ -22,7 +22,11 @@ const payFetch = createPayFetch({
       approval: { mode: "policy" },
       policy: {}
     });
-    await gw.x402Sign({ accepts: challenge, resource: url });
+    const signed = await gw.x402Sign({
+      accepts: (challenge.body as { accepts: unknown }).accepts,
+      resource: url
+    });
+    return { headers: { [signed.headerName]: signed.authorizationHeader } };
   }
 });
 

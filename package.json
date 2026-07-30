@@ -64,7 +64,7 @@
   "homepage": "https://xagent-labs.github.io/xpense/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/xagent-labs/xpense.git"
+    "url": "git+https://github.com/xagentAI/xpense.git"
   },
   "license": "UNLICENSED",
   "publishConfig": {
@@ -79,6 +79,6 @@
     "vitest": "^4.1.5"
   },
   "dependencies": {
-    "viem": "^2.52.2"
+    "viem": "^2.55.10"
   }
 }

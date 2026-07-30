@@ -18,6 +18,9 @@ Xpense Facade
   XpenseOptions
   resolveConfig / XpenseConfig
 
+X-Agent Runtime
+  Commerce Runtime            createXAgent · BillingPort · ModelProvider · receipts
+
 Intent
   PaymentIntentBuilder
   buildFromDraft
@@ -59,6 +62,7 @@ Money
 
 | Layer      | Directory     | Concern                                             |
 | ---------- | ------------- | --------------------------------------------------- |
+| Runtime    | `runtime/`    | X-Agent reserve → invoke → settle orchestration     |
 | Agent      | `agent/`      | Xpense facade, capabilities (tools), inject, ledger |
 | Intent     | `intent/`     | build · validate · lifecycle of a Payment Intent    |
 | Governance | `governance/` | budget engine + approval + revoke (the moat)        |
