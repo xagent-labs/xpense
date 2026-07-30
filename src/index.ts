@@ -53,8 +53,17 @@ export type { ApprovalDecision } from "./governance/approval.ts";
 
 export { PaymentSession } from "./agent/ledger.ts";
 export type { SessionEntry } from "./agent/ledger.ts";
-export { createPayFetch } from "./settlement/pay-fetch.ts";
-export type { PayFetchOptions } from "./settlement/pay-fetch.ts";
+export {
+  createPayFetch,
+  PaymentChallengeTooLargeError,
+  UnsafePaymentReplayError
+} from "./settlement/pay-fetch.ts";
+export type {
+  PaymentChallenge,
+  PaymentCredential,
+  PaymentRequiredRequest,
+  PayFetchOptions
+} from "./settlement/pay-fetch.ts";
 
 export { buildInjection } from "./agent/inject.ts";
 export type {

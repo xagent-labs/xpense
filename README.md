@@ -112,17 +112,26 @@ Covered endpoints: `wallet/{status,login,verify,addresses,balance,logout}`, `x40
 
 ## Pay-on-402
 
-Wrap `fetch` to react to HTTP `402 Payment Required` challenges:
+Wrap `fetch` to complete one policy-controlled HTTP `402 Payment Required` call. The callback owns Intent creation, budget/policy authorization, and the scoped backend call; it returns only the payment header used for one retry.
 
 ```ts
 import { createPayFetch } from "@xagent/xpense";
 
 const payFetch = createPayFetch({
   onPaymentRequired: async (challenge, { url }) => {
-    // emit a Payment Intent, then settle via gateway.x402Sign(...)
+    // authorize a Payment Intent in your app, then call the scoped backend
+    const signed = await gateway.x402Sign({
+      accepts: (challenge.body as { accepts: unknown }).accepts,
+      resource: url
+    });
+    return { headers: { [signed.headerName]: signed.authorizationHeader } };
   }
 });
+
+await payFetch("https://api.example.com/paid-resource");
 ```
+
+The wrapper retries exactly once. `GET` and `HEAD` are safe by default. For `POST` / other non-safe requests, pass a provider-supported `Idempotency-Key` and set `allowUnsafeReplay: true`; otherwise xpense rejects the 402 before policy or wallet code is invoked.
 
 ## CLI
 
