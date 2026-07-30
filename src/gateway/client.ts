@@ -2,6 +2,14 @@ import type { Money } from "../intent/types.ts";
 import type { ChatMessage, ModelUsage } from "../runtime/types.ts";
 
 const DEFAULT_TIMEOUT_MS = 60_000;
+const MAX_RESPONSE_BYTES = 1024 * 1024;
+const SAFE_ERROR_CODES = new Set([
+  "insufficient_balance",
+  "idempotency_conflict",
+  "policy_denied",
+  "rate_limited",
+  "gateway_timeout"
+]);
 
 export type GatewayModelProvider = "openrouter";
 
@@ -95,7 +103,7 @@ export class XAgentGatewayClient {
           ...(input.maxCharge ? { maxCharge: input.maxCharge } : {})
         })
       });
-      const payload = (await response.json().catch(() => null)) as unknown;
+      const payload = parseJson(await readBoundedText(response, MAX_RESPONSE_BYTES));
       if (!response.ok) throw gatewayError(response.status, payload);
       return parseChatResult(payload);
     } catch (error) {
@@ -131,8 +139,10 @@ function parseBaseUrl(value: string): URL {
 }
 
 function validateChatRequest(input: GatewayChatRequest): void {
-  if (!input || !isSafeToken(input.requestId) || !isSafeToken(input.model)) {
-    throw new TypeError("requestId and model must be non-empty strings without control characters");
+  if (!input || !isSafeRequestId(input.requestId) || !isSafeToken(input.model)) {
+    throw new TypeError(
+      "requestId must be an HTTP-safe token and model must be a non-empty safe string"
+    );
   }
   if (input.provider !== undefined && input.provider !== "openrouter") {
     throw new TypeError("provider must be openrouter when specified");
@@ -151,6 +161,9 @@ function validateChatRequest(input: GatewayChatRequest): void {
     if (typeof message.content !== "string" || message.content.length > 64 * 1024) {
       throw new TypeError("message content must be a string of at most 65536 characters");
     }
+  }
+  if (input.maxCharge !== undefined && !validMoney(input.maxCharge)) {
+    throw new TypeError("maxCharge must be a non-negative decimal amount and uppercase currency");
   }
 }
 
@@ -180,9 +193,11 @@ function gatewayError(status: number, payload: unknown): XAgentGatewayError {
   const error = (payload as { error?: { code?: unknown; message?: unknown; requestId?: unknown } })
     ?.error;
   return new XAgentGatewayError(
-    typeof error?.message === "string" ? error.message : "Gateway rejected the request",
+    "Gateway rejected the request",
     status,
-    typeof error?.code === "string" ? error.code : "gateway_error",
+    typeof error?.code === "string" && SAFE_ERROR_CODES.has(error.code)
+      ? error.code
+      : "gateway_error",
     typeof error?.requestId === "string" ? error.requestId : undefined
   );
 }
@@ -216,6 +231,53 @@ function isSafeToken(value: unknown): value is string {
     value.length <= 256 &&
     !/[\u0000\r\n]/.test(value)
   );
+}
+
+function isSafeRequestId(value: unknown): value is string {
+  return typeof value === "string" && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value);
+}
+
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return null;
+  }
+}
+
+async function readBoundedText(response: Response, maxBytes: number): Promise<string> {
+  const length = Number(response.headers.get("content-length"));
+  if (Number.isSafeInteger(length) && length > maxBytes)
+    throw new XAgentGatewayError("Gateway response is too large", 502, "invalid_gateway_response");
+  if (!response.body) return "";
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      total += value.byteLength;
+      if (total > maxBytes) {
+        void reader.cancel().catch(() => undefined);
+        throw new XAgentGatewayError(
+          "Gateway response is too large",
+          502,
+          "invalid_gateway_response"
+        );
+      }
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  const bytes = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) {
+    bytes.set(chunk, offset);
+    offset += chunk.byteLength;
+  }
+  return new TextDecoder().decode(bytes);
 }
 
 function isLoopback(hostname: string): boolean {
