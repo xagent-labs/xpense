@@ -93,6 +93,13 @@ export default defineConfig({
           items: [{ text: "Commerce Runtime", link: "/docs/runtime/commerce-runtime" }]
         },
         {
+          text: "Development",
+          items: [
+            { text: "SDK Integration Guide", link: "/docs/development/sdk-guide" },
+            { text: "Development Plan", link: "/docs/development/development-plan" }
+          ]
+        },
+        {
           text: "Intent",
           items: [
             { text: "PaymentIntentBuilder", link: "/docs/intent/builder" },
